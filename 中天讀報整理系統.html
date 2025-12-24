@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中天讀報整理系統</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft JhengHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .controls {
+            padding: 30px;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e9ecef;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Microsoft JhengHei', Arial, sans-serif;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+        }
+
+        .file-input-wrapper input[type=file] {
+            display: none;
+        }
+
+        .file-input-wrapper label {
+            display: inline-block;
+            margin: 0;
+        }
+
+        .options {
+            padding: 20px 30px;
+            background: #e7f3ff;
+            border-bottom: 2px solid #2196F3;
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .option-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 15px;
+            color: #1565C0;
+        }
+
+        .option-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .option-item label {
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .stats {
+            padding: 20px 30px;
+            background: #fff3cd;
+            border-bottom: 2px solid #ffc107;
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #856404;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #856404;
+            margin-top: 5px;
+        }
+
+        .table-container {
+            max-height: 600px;
+            overflow: auto;
+            position: relative;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            min-width: 800px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #dee2e6;
+            border-right: 1px solid #dee2e6;
+        }
+
+        th:first-child, td:first-child {
+            border-left: 1px solid #dee2e6;
+        }
+
+        th {
+            background: #667eea;
+            color: white;
+            font-weight: bold;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border-top: 1px solid #dee2e6;
+        }
+
+        tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        tr:hover {
+            background: #e9ecef;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 90px 50px;
+            color: #6c757d;
+        }
+
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .empty-state-text {
+            font-size: 18px;
+        }
+
+        .footer {
+            padding: 20px;
+            text-align: center;
+            background: #f8f9fa;
+            color: #6c757d;
+            font-size: 14px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            font-size: 18px;
+            color: #667eea;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📰 中天讀報整理系統</h1>
+            <p>匯入 TXT 檔案、整理數據、輸出結果</p>
+        </div>
+
+        <div class="controls">
+            <div class="file-input-wrapper">
+                <label for="fileInput" class="btn btn-primary">📁 輸入資料</label>
+                <input type="file" id="fileInput" accept=".txt">
+            </div>
+            <button id="processBtn" class="btn btn-success" disabled>⚙️ 輸出TXT</button>
+            <button id="clearBtn" class="btn btn-danger">🗑️ 清空表格</button>
+        </div>
+
+        <div class="options">
+            <div class="option-item">
+                <input type="checkbox" id="excludeGongshang" checked>
+                <label for="excludeGongshang">排除工商時報</label>
+            </div>
+            <div class="option-item">
+                <input type="checkbox" id="excludeJingji" checked>
+                <label for="excludeJingji">排除經濟日報</label>
+            </div>
+        </div>
+
+        <div class="stats" id="stats" style="display: none;">
+            <div class="stat-item">
+                <div class="stat-value" id="rowCount">0</div>
+                <div class="stat-label">總行數</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="colCount">0</div>
+                <div class="stat-label">總列數</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="fileName">-</div>
+                <div class="stat-label">檔案名稱</div>
+            </div>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <div>處理中...</div>
+        </div>
+
+        <div class="table-container" id="tableContainer">
+            <div class="empty-state">
+                <div class="empty-state-icon">📋</div>
+                <div class="empty-state-text">請點擊「輸入資料」按鈕載入 TXT 檔案</div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>© 2025 中天讀報整理系統 | 網頁版</p>
+            <p style="margin-top: 5px; font-size: 12px; opacity: 0.8;">最後更新：2025/12/19</p>
+        </div>
+    </div>
+
+    <script>
+        let tableData = [];
+        let originalFileName = '';
+
+        // 檔案輸入處理
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            originalFileName = file.name;
+            const reader = new FileReader();
+
+            document.getElementById('loading').classList.add('active');
+
+            reader.onload = function(event) {
+                const content = event.target.result;
+                const lines = content.split(/\r?\n/);
+                
+                // 清空現有數據
+                tableData = [];
+
+                // 處理每一行
+                lines.forEach(line => {
+                    if (line.trim()) {
+                        // 使用 Tab 分隔
+                        const cells = line.split('\t');
+                        tableData.push(cells);
+                    }
+                });
+
+                displayTable();
+                document.getElementById('processBtn').disabled = false;
+                document.getElementById('loading').classList.remove('active');
+                
+                // 更新統計
+                updateStats();
+            };
+
+            reader.readAsText(file, 'Big5');
+        });
+
+        // 顯示表格
+        function displayTable() {
+            const container = document.getElementById('tableContainer');
+            
+            if (tableData.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📋</div>
+                        <div class="empty-state-text">沒有資料可顯示</div>
+                    </div>
+                `;
+                return;
+            }
+
+            // 找出最大列數
+            const maxCols = Math.max(...tableData.map(row => row.length));
+
+            let html = '<table><thead><tr>';
+            
+            // 使用第一行作為標題
+            if (tableData.length > 0) {
+                for (let i = 0; i < maxCols; i++) {
+                    html += `<th>${tableData[0][i] || ''}</th>`;
+                }
+            }
+            html += '</tr></thead><tbody>';
+
+            // 添加數據行（從第二行開始）
+            for (let rowIndex = 1; rowIndex < tableData.length; rowIndex++) {
+                html += '<tr>';
+                for (let i = 0; i < maxCols; i++) {
+                    html += `<td>${tableData[rowIndex][i] || ''}</td>`;
+                }
+                html += '</tr>';
+            }
+
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        // 獲取列名 (A, B, C, ..., Z, AA, AB, ...)
+        function getColumnName(index) {
+            let name = '';
+            index++;
+            while (index > 0) {
+                let mod = (index - 1) % 26;
+                name = String.fromCharCode(65 + mod) + name;
+                index = Math.floor((index - mod) / 26);
+            }
+            return name;
+        }
+
+        // 更新統計
+        function updateStats() {
+            const stats = document.getElementById('stats');
+            if (tableData.length > 0) {
+                stats.style.display = 'flex';
+                // 扣除標題行
+                document.getElementById('rowCount').textContent = tableData.length - 1;
+                const maxCols = Math.max(...tableData.map(row => row.length));
+                document.getElementById('colCount').textContent = maxCols;
+                document.getElementById('fileName').textContent = originalFileName || '-';
+            } else {
+                stats.style.display = 'none';
+            }
+        }
+
+        // 處理並輸出 TXT
+        document.getElementById('processBtn').addEventListener('click', function() {
+            if (tableData.length === 0) {
+                alert('沒有資料可處理');
+                return;
+            }
+
+            document.getElementById('loading').classList.add('active');
+
+            // 使用 setTimeout 讓 UI 有時間更新
+            setTimeout(() => {
+                processData();
+                document.getElementById('loading').classList.remove('active');
+            }, 100);
+        });
+
+        function processData() {
+            // 複製數據以避免修改原始數據
+            let data = tableData.map(row => [...row]);
+
+            // 檢查是否排除工商時報和經濟日報
+            const excludeGongshang = document.getElementById('excludeGongshang').checked;
+            const excludeJingji = document.getElementById('excludeJingji').checked;
+
+            // 定義要刪除的文字
+            const deleteListB = ["周刊王", "鏡週刊", "時報週刊", "蘋果日報", "中天新聞網"];
+            const deleteListJ = ["蘋果頭版", "蘋果", "中天新聞網"];
+
+            // 根據勾選狀態添加要排除的項目
+            if (excludeGongshang) {
+                deleteListB.push("工商時報");
+                deleteListJ.push("工商頭版");
+            }
+            if (excludeJingji) {
+                deleteListB.push("經濟日報");
+                deleteListJ.push("經濟頭版");
+            }
+
+            // 從最後一行往上遍歷，刪除符合條件的行
+            for (let i = data.length - 1; i >= 0; i--) {
+                const colB = data[i][1] || ''; // 第2列 (B列, index 1)
+                const colJ = data[i][9] || ''; // 第10列 (J列, index 9)
+
+                if (deleteListB.includes(colB) || deleteListJ.includes(colJ)) {
+                    data.splice(i, 1);
+                }
+            }
+
+            // 檢查J列是否有"ET"或"聯合"相關內容
+            let foundETInJ = false;
+            let foundUnitedInJ = false;
+
+            for (let i = 0; i < data.length; i++) {
+                const colJ = data[i][9] || '';
+                if (colJ.includes("ET")) foundETInJ = true;
+                if (colJ.includes("聯合")) foundUnitedInJ = true;
+            }
+
+            // 如果J列沒有"ET"相關內容，刪除B列中包含"ET"的整行
+            if (!foundETInJ) {
+                for (let i = data.length - 1; i >= 0; i--) {
+                    const colB = data[i][1] || '';
+                    if (colB.includes("ET")) {
+                        data.splice(i, 1);
+                    }
+                }
+            }
+
+            // 如果J列沒有"聯合"相關內容，刪除B列中包含"聯合"的整行
+            if (!foundUnitedInJ) {
+                for (let i = data.length - 1; i >= 0; i--) {
+                    const colB = data[i][1] || '';
+                    if (colB.includes("聯合")) {
+                        data.splice(i, 1);
+                    }
+                }
+            }
+
+            // 清除K列(index 10)中包含"RO"的儲存格
+            for (let i = 0; i < data.length; i++) {
+                if (data[i][10] && data[i][10].includes("RO")) {
+                    data[i][10] = '';
+                }
+            }
+
+            // 刪除指定的欄 (A, C, E, F, G, H, I, L, M, N, O, P, Q, R)
+            // 對應的索引: 0, 2, 4, 5, 6, 7, 8, 11, 12, 13, 14, 15, 16, 17
+            const columnsToDelete = [17, 16, 15, 14, 13, 12, 11, 8, 7, 6, 5, 4, 2, 0];
+            
+            data = data.map(row => {
+                return row.filter((cell, index) => !columnsToDelete.includes(index));
+            });
+
+            // 重新排列列
+            // 原始: B(1), D(3), J(9), K(10)
+            // 刪除後的索引: 0, 1, 2, 3
+            // 目標順序: C -> A, B -> B, J -> C, K -> D (原始的J, B, K)
+            // 實際上原始碼的順序是:
+            // B->E, A->F, C->A, F->B, E->C
+            // 在刪除欄位後，剩下的是: B(原B), D(原D), J(原J), K(原K)
+            // 新索引: 0, 1, 2, 3
+            // 重排: 2->0, 0->1, 3->2 (J->A, B->B, K->C)
+            
+            data = data.map(row => {
+                const newRow = [];
+                newRow[0] = row[2] || ''; // J -> A
+                newRow[1] = row[0] || ''; // B -> B
+                newRow[2] = row[1] || ''; // D -> C
+                newRow[3] = row[3] || ''; // K -> D
+                return newRow;
+            });
+
+            // 搜尋並刪除字符 "ˊ"
+            data = data.map(row => 
+                row.map(cell => (cell || '').replace(/ˊ/g, ''))
+            );
+
+            // 生成輸出文字
+            let output = '';
+            for (let i = 0; i < data.length; i++) {
+                // 檢查是否有有效數據
+                if (data[i].some(cell => cell !== '')) {
+                    let line = '';
+                    for (let j = 0; j < data[i].length; j++) {
+                        if (data[i][j] !== '') {
+                            line += data[i][j];
+                        }
+                        if (j !== data[i].length - 1) {
+                            line += '_';
+                        }
+                    }
+
+                    // 檢查行尾是否包含兩個下划線，如果包含則在前面加一個換行
+                    if (line.endsWith('__')) {
+                        line = '\n' + line;
+                    }
+
+                    // 檢查行尾是否包含單個下划線，如果包含則刪除
+                    if (line.endsWith('_')) {
+                        line = line.slice(0, -1);
+                    }
+
+                    output += line + '\n';
+                }
+            }
+
+            // 下載文件
+            downloadTextFile(output, '中天讀報.txt');
+            
+            alert('整理完成！檔案已下載為「中天讀報.txt」');
+        }
+
+        // 下載文字檔案
+        function downloadTextFile(content, filename) {
+            const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // 清空表格
+        document.getElementById('clearBtn').addEventListener('click', function() {
+            if (tableData.length === 0 || confirm('確定要清空所有資料嗎？')) {
+                tableData = [];
+                originalFileName = '';
+                displayTable();
+                updateStats();
+                document.getElementById('processBtn').disabled = true;
+                document.getElementById('fileInput').value = '';
+            }
+        });
+    </script>
+</body>
+</html>
