@@ -844,7 +844,9 @@
         }
 
         function downloadTextFile(content, filename) {
-            const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+            // 將所有換行符號統一為 Windows 格式 (\r\n)
+            const winContent = content.replace(/\r?\n/g, '\r\n');
+            const blob = new Blob([winContent], { type: 'text/plain;charset=utf-8' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
